@@ -1,3 +1,53 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Fontes otimizadas (apenas os pesos e estilos necessários) */
+@import url('https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap');
+
+@layer components {
+  .container-global {
+    @apply max-w-6xl mx-auto px-4;
+  }
+
+  /* Tipografia alinhada com as cores do tema */
+  .text-heading-1 {
+    @apply font-cherry-bomb text-4xl text-white; /* text-white = #ffffff */
+  }
+
+  .text-heading-2 {
+    @apply font-bebas-neue text-3xl tracking-wide text-white;
+  }
+
+  .text-body-large {
+    @apply font-inter text-lg leading-relaxed text-white/90; /* 90% de opacidade */
+  }
+
+  .text-body-base {
+    @apply font-inter text-base text-white/80; /* 80% de opacidade */
+  }
+
+  /* Botões usando cores do tema */
+  .btn-primary {
+    @apply bg-secondary px-6 py-3 rounded-full 
+           font-bebas-neue text-xl text-white
+           transition-transform hover:scale-105 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-button-secondary px-6 py-3 rounded-full 
+           font-bebas-neue text-xl text-white
+           border-2 border-secondary hover:bg-secondary/20;
+  }
+
+  /* Cards de filme */
+  .movie-card {
+    @apply bg-primary rounded-xl p-4 shadow-lg hover:shadow-2xl transition-shadow;
+  }
+
+  .movie-card-title {
+    @apply font-bebas-neue text-2xl text-white truncate mb-2;
+  }
+}
