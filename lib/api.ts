@@ -126,3 +126,109 @@ export const fetchTrendingMovies = async () => {
     return { results: [] };
   }
 };
+
+/**
+ * Busca filmes em tendência da semana em português do Brasil
+ */
+export const fetchTrendingWeeklyMovies = async () => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/trending/movie/week?language=${LANGUAGE}`,
+      options
+    );
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error("Failed to fetch weekly trending movies:", error);
+    return { results: [] };
+  }
+};
+
+
+/**
+ * Busca os filmes mais bem avaliados em português do Brasil
+ */
+export const fetchTopRatedMovies = async (page = 1) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/movie/top_rated?language=${LANGUAGE}&region=${REGION}&page=${page}`, 
+      options
+    );
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error("Failed to fetch top rated movies:", error);
+    return { results: [] };
+  }
+};
+
+/**
+ * Pesquisa filmes por um termo específico
+ */
+export const searchMovies = async (query: string, page = 1) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/search/movie?query=${encodeURIComponent(query)}&language=${LANGUAGE}&page=${page}`,
+      options
+    );
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error("Failed to search movies:", error);
+    return { results: [] };
+  }
+};
+
+/**
+ * Busca créditos de um filme específico
+ */
+export const fetchMovieCredits = async (movieId: number) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/movie/${movieId}/credits?language=${LANGUAGE}`,
+      options
+    );
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error(`Failed to fetch movie credits for ID ${movieId}:`, error);
+    return { cast: [], crew: [] };
+  }
+};
+
+/**
+ * Busca filmes similares a um filme específico
+ */
+export const fetchSimilarMovies = async (movieId: number) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/movie/${movieId}/similar?language=${LANGUAGE}`,
+      options
+    );
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error(`Failed to fetch similar movies for ID ${movieId}:`, error);
+    return { results: [] };
+  }
+};
