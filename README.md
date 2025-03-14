@@ -63,7 +63,7 @@ This project was brought to life by:
   
 - [Teo William](https://github.com/Teomendonca)
   
-- [Isabela Freire](https://github.com/enzodevs)
+- [Isabela Freire](https://github.com/IsabelaFGoes)
   
 - [João Vitor](https://github.com/Wenceslauu)
   
