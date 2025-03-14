@@ -17,7 +17,6 @@ interface HomeSectionProps {
   movies: Movie[];
   isLoading: boolean;
   horizontal?: boolean;
-  loadMore?: () => void;
 }
 
 export const HomeSection = ({ 
@@ -25,13 +24,11 @@ export const HomeSection = ({
   movies, 
   isLoading, 
   horizontal = false,
-  loadMore 
 }: HomeSectionProps) => {
   // Seção vazia e não esta carregando
   if (movies.length === 0 && !isLoading) {
     return null;
   }
-
   return (
     <View className="mb-4">
       {horizontal ? (
@@ -45,7 +42,6 @@ export const HomeSection = ({
           title={title}
           movies={movies}
           isLoading={isLoading}
-          loadMore={loadMore}
         />
       )}
     </View>

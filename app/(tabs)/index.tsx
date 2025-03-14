@@ -52,7 +52,6 @@ export default function Home() {
         movies: trendingMovies,
         isLoading: isLoadingTrending,
         horizontal: true,
-        loadMore: undefined
       }]
     },
     {
@@ -62,7 +61,6 @@ export default function Home() {
         movies: popularMovies,
         isLoading: isLoadingPopular,
         horizontal: false,
-        loadMore: undefined
       }]
     },
     {
@@ -72,7 +70,6 @@ export default function Home() {
         movies: nowPlayingMovies,
         isLoading: isLoadingNowPlaying,
         horizontal: true,
-        loadMore: undefined
       }]
     },
     {
@@ -82,7 +79,6 @@ export default function Home() {
         movies: upcomingMovies,
         isLoading: isLoadingUpcoming,
         horizontal: true,
-        loadMore: undefined
       }]
     }
   ].filter(section => 
@@ -110,7 +106,6 @@ export default function Home() {
             movies={item.movies}
             isLoading={item.isLoading}
             horizontal={item.horizontal}
-            loadMore={item.loadMore}
           />
         )}
         contentContainerStyle={{ 
