@@ -1,7 +1,7 @@
 // Header
 
 import React from 'react';
-import { View, Text, TouchableOpacity, Platform, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
@@ -12,10 +12,9 @@ interface HeaderProps {
 }
 
 const hitSlop = { top: 15, bottom: 15, left: 20, right: 20 };
-const { height } = Dimensions.get('window'); // Get screen height
+const { height } = Dimensions.get('window');
 
-// Calculate a responsive top offset based on screen height
-const backButtonTopOffset = height * 0.04; // Adjust the 0.03 value to control the offset
+const backButtonTopOffset = height * 0.04;
 
 export const Header = ({ hasBackButton = false, title = "CineMatch" }: HeaderProps) => {
   return (
@@ -38,7 +37,7 @@ export const Header = ({ hasBackButton = false, title = "CineMatch" }: HeaderPro
 
 const styles = StyleSheet.create({
   backButton: {
-    paddingVertical: 10, // Add some vertical padding
-    paddingHorizontal: 10, // Add some horizontal padding
+    paddingVertical: 10,
+    paddingHorizontal: 10,
   }
 });

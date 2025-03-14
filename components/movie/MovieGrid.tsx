@@ -22,7 +22,6 @@ export const MovieGrid = ({
   isLoading = false, 
   loadMore 
 }: MovieGridProps) => {
-  const windowWidth = Dimensions.get('window').width;
   
   return (
     <View className="flex-1">
