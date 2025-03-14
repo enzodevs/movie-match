@@ -1,1 +1,0 @@
-// Cabeçalho com avatar
