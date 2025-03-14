@@ -4,6 +4,7 @@
     "slug": "movie-app",
     "version": "1.0.0",
     "scheme": "movie-app",
+    "newArchEnabled": true,
     "web": {
       "bundler": "metro",
       "output": "static",
