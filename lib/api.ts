@@ -18,7 +18,7 @@ const options = {
 /**
  * Busca filmes populares em português do Brasil
  */
-export const fetchPopularMovies = async (page = 1) => {
+export const fetchPopularMovies = async (page = 1, limit = 10) => {
   try {
     const response = await fetch(
       `${BASE_URL}/movie/popular?language=${LANGUAGE}&region=${REGION}&page=${page}`, 
@@ -29,7 +29,14 @@ export const fetchPopularMovies = async (page = 1) => {
       throw new Error(`API error: ${response.status}`);
     }
     
-    return response.json();
+    const data = await response.json();
+    
+    // Limita o número de resultados para o valor especificado
+    if (page === 1 && limit > 0 && data.results.length > limit) {
+      data.results = data.results.slice(0, limit);
+    }
+    
+    return data;
   } catch (error) {
     console.error("Failed to fetch popular movies:", error);
     return { results: [] };
