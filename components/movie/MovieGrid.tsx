@@ -1,32 +1,33 @@
+// Card componente para mostrar movie cards
+
 import React from 'react';
-import { View, Text, ActivityIndicator, FlatList } from 'react-native';
-import { MovieCard } from './MovieCard';
+import { View, Text, ActivityIndicator, FlatList, Dimensions } from 'react-native';
+import { MovieGridCard } from './MovieGridCard';
 
 interface Movie {
   id: number;
-  title: string;
   poster_path: string;
-  vote_average: number;
-  release_date?: string;
 }
 
-interface MovieListProps {
+interface MovieGridProps {
   title: string;
   movies: Movie[];
   isLoading?: boolean;
   loadMore?: () => void;
 }
 
-export const MovieList = ({ 
+export const MovieGrid = ({ 
   title, 
   movies, 
   isLoading = false, 
-  loadMore
-}: MovieListProps) => {
+  loadMore 
+}: MovieGridProps) => {
+  const windowWidth = Dimensions.get('window').width;
+  
   return (
-    <View>
-      <View className="items-center mb-3">
-        <Text className="text-heading-2 text-center">{title}</Text>
+    <View className="flex-1">
+      <View className="items-center mb-4 mt-4">
+        <Text className="text-white text-xl font-bold">{title}</Text>
       </View>
       
       {isLoading && movies.length === 0 ? (
@@ -38,32 +39,28 @@ export const MovieList = ({
           data={movies}
           horizontal={false}
           showsVerticalScrollIndicator={false}
-          scrollEnabled={false}
           contentContainerStyle={{ 
             paddingHorizontal: 8,
-            paddingBottom: 8,
-            paddingTop: 4
+            paddingBottom: 16
           }}
+          numColumns={3}
           keyExtractor={(item) => item.id.toString()}
-          numColumns={2}
           columnWrapperStyle={{ 
-            justifyContent: 'space-evenly', 
-            gap: 10,
-            marginBottom: 14
+            justifyContent: 'space-evenly',
+            marginBottom: 8
           }}
           renderItem={({ item }) => (
-            <MovieCard
+            <MovieGridCard
               id={item.id}
-              title={item.title}
               posterPath={item.poster_path}
-              voteAverage={item.vote_average}
-              releaseDate={item.release_date}
             />
           )}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
           ListFooterComponent={
             isLoading && movies.length > 0 ? (
-              <View className="w-16 justify-center items-center">
-                <ActivityIndicator color="#ff4500" size="large" className="my-3" />
+              <View className="w-full items-center justify-center py-4">
+                <ActivityIndicator color="#ff4500" size="large" />
               </View>
             ) : null
           }
