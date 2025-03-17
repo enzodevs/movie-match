@@ -3,11 +3,7 @@
 import React from 'react';
 import { View, Text, ActivityIndicator, FlatList, Dimensions } from 'react-native';
 import { MovieGridCard } from './MovieGridCard';
-
-interface Movie {
-  id: number;
-  poster_path: string;
-}
+import { Movie } from '~/types/movie';
 
 interface MovieGridProps {
   title: string;

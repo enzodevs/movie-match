@@ -1,51 +1,114 @@
-// Hook para autenticação com Supabase - gerencia estado de autenticação e operações de login/logout
+// Hook para autenticação
 
-import { supabase } from '../utils/supabase';
 import { useState, useEffect } from 'react';
-import { User } from '@supabase/supabase-js';
+import { User } from '~/types';
+import { authService } from '~/services/api/supabase';
 
 export const useAuth = () => {
-    
-  // Estado para armazenar os dados do usuário atual (null quando não autenticado)
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Escuta mudanças no estado de autenticação (login/logout)
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      // Atualiza o estado com o usuário da sessão ou null se não estiver autenticado
-      setUser(session?.user || null);
+    // Buscar usuário atual ao inicializar
+    const checkUser = async () => {
+      try {
+        const supabaseUser = await authService.getCurrentUser();
+        setUser(authService.mapUser(supabaseUser));
+      } catch (err) {
+        console.error('Error checking current user:', err);
+        setError('Failed to get current user');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Configurar listener de mudanças na autenticação
+    const unsubscribe = authService.onAuthStateChange((supabaseUser) => {
+      setUser(authService.mapUser(supabaseUser));
+      setIsLoading(false);
     });
 
-    // Função de limpeza que é executada quando o componente é desmontado
-    return () => authListener.subscription.unsubscribe();
+    checkUser();
+
+    // Limpar listener ao desmontar
+    return unsubscribe;
   }, []);
 
-  // Função para autenticar usuário com email e senha
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    return data;
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const { user: supabaseUser } = await authService.signIn(email, password);
+      const mappedUser = authService.mapUser(supabaseUser);
+      setUser(mappedUser);
+      return mappedUser;
+    } catch (err: any) {
+      console.error('Error signing in:', err);
+      setError(err.message || 'Failed to sign in');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Função para fazer logout do usuário atual
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    // Não precisa atualizar o estado user aqui, pois o listener do onAuthStateChange fará isso
-  };
-
-  // Função para criar uma nova conta de usuário
   const signUp = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) throw error;
-    return data; // Retorna dados do usuário recém-criado
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const { user: supabaseUser } = await authService.signUp(email, password);
+      const mappedUser = authService.mapUser(supabaseUser);
+      setUser(mappedUser);
+      return mappedUser;
+    } catch (err: any) {
+      console.error('Error signing up:', err);
+      setError(err.message || 'Failed to sign up');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Função para iniciar o processo de recuperação de senha
+  const signOut = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      await authService.signOut();
+      setUser(null);
+    } catch (err: any) {
+      console.error('Error signing out:', err);
+      setError(err.message || 'Failed to sign out');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const resetPassword = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
-    if (error) throw error;
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      await authService.resetPassword(email);
+    } catch (err: any) {
+      console.error('Error resetting password:', err);
+      setError(err.message || 'Failed to reset password');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Retorna o usuário atual e funções
-  return { user, signIn, signOut, signUp, resetPassword };
+  return {
+    user,
+    isLoading,
+    error,
+    signIn,
+    signUp,
+    signOut,
+    resetPassword
+  };
 };

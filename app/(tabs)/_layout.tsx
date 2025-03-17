@@ -2,6 +2,7 @@
 
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { CustomTabBar } from '~/components/navigation/CustomTabBar';
 
 export default function TabLayout() {
   return (
@@ -17,7 +18,8 @@ export default function TabLayout() {
           fontSize: 12,
         },
         headerShown: false,
-      }}>
+      }}
+      tabBar={props => <CustomTabBar {...props} />}>
       <Tabs.Screen
         name="index"
         options={{

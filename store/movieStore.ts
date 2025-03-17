@@ -1,30 +1,8 @@
 // Módulo de estado para gerenciar o estado global de filmes com zustand
 
 import { create } from 'zustand';
-import { 
-  fetchPopularMovies, 
-  fetchTrendingMovies, 
-  fetchNowPlayingMovies, 
-  fetchUpcomingMovies, 
-  fetchMovieDetails,
-  fetchTrendingWeeklyMovies,
-  fetchTopRatedMovies,
-  searchMovies,
-  fetchMovieCredits,
-  fetchSimilarMovies
-} from '~/lib/api';
-
-interface Movie {
-  id: number;
-  title: string;
-  poster_path: string;
-  backdrop_path: string;
-  vote_average: number;
-  release_date?: string;
-  overview?: string;
-  genres?: { id: number, name: string }[];
-  // Adicionar mais campos do filme se necessário
-}
+import { tmdbApi } from '~/services/api';
+import { Movie, MovieCredits } from '~/types/';
 
 interface MovieState {
   // Listas de filmes
@@ -36,7 +14,7 @@ interface MovieState {
   trendingWeeklyMovies: Movie[];
   topRatedMovies: Movie[];
   searchResults: Movie[];
-  movieCredits: Record<number, { cast: any[], crew: any[] }>;
+  movieCredits: Record<number, MovieCredits>;
   similarMovies: Record<number, Movie[]>;
   
   // Cache de detalhes de filmes
@@ -61,7 +39,11 @@ interface MovieState {
   topRatedPage: number;
   searchPage: number;
   searchQuery: string;
-  
+
+  // Gêneros
+  genreMovies: Record<number, Movie[]>;
+  isLoadingGenre: Record<number, boolean>;
+
   // Ações
   fetchPopularMovies: () => Promise<void>;
   fetchMorePopularMovies: () => Promise<void>;
@@ -92,6 +74,10 @@ export const useMovieStore = create<MovieState>((set, get) => ({
   searchResults: [],
   movieCredits: {},
   similarMovies: {},
+
+  // Coleções de filmes por gênero
+  genreMovies: {},
+  isLoadingGenre: {},
   
   // Cache de detalhes de filmes
   movieDetails: {},
@@ -128,7 +114,7 @@ export const useMovieStore = create<MovieState>((set, get) => ({
     set({ isLoadingPopular: true });
     
     try {
-      const data = await fetchPopularMovies();
+      const data = await tmdbApi.movie.getPopular();
       set({ 
         popularMovies: data.results, 
         popularPage: 1,
@@ -150,7 +136,7 @@ export const useMovieStore = create<MovieState>((set, get) => ({
     
     try {
       const nextPage = popularPage + 1;
-      const data = await fetchPopularMovies(nextPage);
+      const data = await tmdbApi.movie.getPopular(nextPage);
       
       set({ 
         popularMovies: [...popularMovies, ...data.results], 
@@ -173,7 +159,7 @@ export const useMovieStore = create<MovieState>((set, get) => ({
     set({ isLoadingTrending: true });
     
     try {
-      const data = await fetchTrendingMovies();
+      const data = await tmdbApi.movie.getTrending();
       set({ 
         trendingMovies: data.results, 
         isLoadingTrending: false 
@@ -194,7 +180,7 @@ export const useMovieStore = create<MovieState>((set, get) => ({
     set({ isLoadingNowPlaying: true });
     
     try {
-      const data = await fetchNowPlayingMovies();
+      const data = await tmdbApi.movie.getNowPlaying();
       set({ 
         nowPlayingMovies: data.results, 
         nowPlayingPage: 1,
@@ -216,7 +202,7 @@ export const useMovieStore = create<MovieState>((set, get) => ({
     
     try {
       const nextPage = nowPlayingPage + 1;
-      const data = await fetchNowPlayingMovies(nextPage);
+      const data = await tmdbApi.movie.getNowPlaying(nextPage);
       
       set({ 
         nowPlayingMovies: [...nowPlayingMovies, ...data.results], 
@@ -239,7 +225,7 @@ export const useMovieStore = create<MovieState>((set, get) => ({
     set({ isLoadingUpcoming: true });
     
     try {
-      const data = await fetchUpcomingMovies();
+      const data = await tmdbApi.movie.getUpcoming();
       set({ 
         upcomingMovies: data.results, 
         upcomingPage: 1,
@@ -261,7 +247,7 @@ export const useMovieStore = create<MovieState>((set, get) => ({
     
     try {
       const nextPage = upcomingPage + 1;
-      const data = await fetchUpcomingMovies(nextPage);
+      const data = await tmdbApi.movie.getUpcoming(nextPage);
       
       set({ 
         upcomingMovies: [...upcomingMovies, ...data.results], 
@@ -276,7 +262,7 @@ export const useMovieStore = create<MovieState>((set, get) => ({
   
   // Função para buscar detalhes de um filme
   fetchMovieDetails: async (movieId: number) => {
-    const { movieDetails, isLoadingDetails } = get();
+    const { movieDetails } = get();
 
     if (movieDetails[movieId]) {
       return movieDetails[movieId];
@@ -287,7 +273,7 @@ export const useMovieStore = create<MovieState>((set, get) => ({
     }));
 
     try {
-      const data = await fetchMovieDetails(movieId);
+      const data = await tmdbApi.movie.getDetails(movieId);
 
       if (data) {
         set((state) => ({
@@ -324,7 +310,7 @@ export const useMovieStore = create<MovieState>((set, get) => ({
     set({ isLoadingTrendingWeekly: true });
     
     try {
-      const data = await fetchTrendingWeeklyMovies();
+      const data = await tmdbApi.movie.getTrendingWeekly();
       set({ 
         trendingWeeklyMovies: data.results, 
         isLoadingTrendingWeekly: false 
@@ -344,7 +330,7 @@ export const useMovieStore = create<MovieState>((set, get) => ({
     set({ isLoadingTopRated: true });
     
     try {
-      const data = await fetchTopRatedMovies();
+      const data = await tmdbApi.movie.getTopRated();
       set({ 
         topRatedMovies: data.results, 
         topRatedPage: 1,
@@ -366,7 +352,7 @@ export const useMovieStore = create<MovieState>((set, get) => ({
     
     try {
       const nextPage = topRatedPage + 1;
-      const data = await fetchTopRatedMovies(nextPage);
+      const data = await tmdbApi.movie.getTopRated(nextPage);
       
       set({ 
         topRatedMovies: [...topRatedMovies, ...data.results], 
@@ -379,54 +365,65 @@ export const useMovieStore = create<MovieState>((set, get) => ({
     }
   },
   
-  // Função para buscar filmes por query
-  searchMovies: async (query: string) => {
-    if (!query.trim()) {
-      set({ searchResults: [], searchQuery: "", searchPage: 1 });
-      return;
-    }
-    
-    set({ isLoadingSearch: true, searchQuery: query });
-    
-    try {
-      const data = await searchMovies(query);
-      set({ 
-        searchResults: data.results, 
-        searchPage: 1,
-        isLoadingSearch: false 
-      });
-    } catch (error) {
-      console.error("Failed to search movies:", error);
-      set({ isLoadingSearch: false });
-    }
-  },
+  // Função para buscar filmes por query com filtro para remover filmes sem pôster
+searchMovies: async (query: string) => {
+  if (!query.trim()) {
+    set({ searchResults: [], searchQuery: "", searchPage: 1 });
+    return;
+  }
   
-  // Função para buscar mais filmes por query
-  searchMoreMovies: async () => {
-    const { searchPage, isLoadingSearch, searchResults, searchQuery } = get();
+  set({ isLoadingSearch: true, searchQuery: query });
+  
+  try {
+    const data = await tmdbApi.movie.search(query);
     
-    if (isLoadingSearch || !searchQuery) return;
+    // Filtrar os resultados para mostrar apenas filmes com pôster
+    const filteredResults = data.results.filter((movie: Movie) => 
+      movie.poster_path !== null && movie.poster_path !== ''
+    );
     
-    set({ isLoadingSearch: true });
+    set({ 
+      searchResults: filteredResults, 
+      searchPage: 1,
+      isLoadingSearch: false 
+    });
+  } catch (error) {
+    console.error("Failed to search movies:", error);
+    set({ isLoadingSearch: false });
+  }
+},
+
+// Função para buscar mais filmes por query com filtro para remover filmes sem pôster
+searchMoreMovies: async () => {
+  const { searchPage, isLoadingSearch, searchResults, searchQuery } = get();
+  
+  if (isLoadingSearch || !searchQuery) return;
+  
+  set({ isLoadingSearch: true });
+  
+  try {
+    const nextPage = searchPage + 1;
+    const data = await tmdbApi.movie.search(searchQuery, nextPage);
     
-    try {
-      const nextPage = searchPage + 1;
-      const data = await searchMovies(searchQuery, nextPage);
-      
-      set({ 
-        searchResults: [...searchResults, ...data.results], 
-        searchPage: nextPage,
-        isLoadingSearch: false 
-      });
-    } catch (error) {
-      console.error("Failed to fetch more search results:", error);
-      set({ isLoadingSearch: false });
-    }
-  },
+    // Filtrar os resultados para mostrar apenas filmes com pôster
+    const filteredResults = data.results.filter((movie: Movie) => 
+      movie.poster_path !== null && movie.poster_path !== ''
+    );
+    
+    set({ 
+      searchResults: [...searchResults, ...filteredResults], 
+      searchPage: nextPage,
+      isLoadingSearch: false 
+    });
+  } catch (error) {
+    console.error("Failed to fetch more search results:", error);
+    set({ isLoadingSearch: false });
+  }
+},
 
   // Função para buscar créditos de um filme
   fetchMovieCredits: async (movieId: number) => {
-    const { movieCredits, isLoadingCredits } = get();
+    const { movieCredits } = get();
 
     if (movieCredits[movieId]) {
       return movieCredits[movieId];
@@ -437,7 +434,7 @@ export const useMovieStore = create<MovieState>((set, get) => ({
     }));
 
     try {
-      const data = await fetchMovieCredits(movieId);
+      const data = await tmdbApi.movie.getCredits(movieId);
 
       if (data) {
         set((state) => ({
@@ -462,7 +459,7 @@ export const useMovieStore = create<MovieState>((set, get) => ({
 
   // Função para buscar filmes similares
   fetchSimilarMovies: async (movieId: number) => {
-    const { similarMovies, isLoadingSimilar } = get();
+    const { similarMovies } = get();
 
     if (similarMovies[movieId]) {
       return similarMovies[movieId];
@@ -473,7 +470,7 @@ export const useMovieStore = create<MovieState>((set, get) => ({
     }));
 
     try {
-      const data = await fetchSimilarMovies(movieId);
+      const data = await tmdbApi.movie.getSimilar(movieId);
 
       if (data && data.results) {
         set((state) => ({
@@ -495,5 +492,4 @@ export const useMovieStore = create<MovieState>((set, get) => ({
       return null;
     }
   },
-  
 }));

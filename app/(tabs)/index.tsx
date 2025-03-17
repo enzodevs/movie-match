@@ -4,9 +4,10 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, RefreshControl, FlatList } from 'react-native';
 import { Stack } from 'expo-router';
 
-import { useMovieStore } from '~/store/movieStore';
+import { useMovieStore } from '~/store/';
 import { Header } from '~/components/layout/Header';
 import { MovieGrid } from '~/components/movie/MovieGrid';
+import { clearCache } from '~/utils';
 
 export default function Home() {
   const [refreshing, setRefreshing] = useState(false);
