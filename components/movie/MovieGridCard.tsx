@@ -6,7 +6,7 @@ import { router } from 'expo-router';
 
 interface MovieGridCardProps {
   id: number;
-  posterPath: string;
+  posterPath: string | null;
 }
 
 export const MovieGridCard = ({ id, posterPath }: MovieGridCardProps) => {

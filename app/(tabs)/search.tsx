@@ -5,7 +5,7 @@ import { View, TextInput, TouchableOpacity, Text, FlatList, ActivityIndicator, D
 import { Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
-import { useMovieStore } from '~/store/movieStore';
+import { useMovieStore } from '~/store/';
 import { Header } from '~/components/layout/Header';
 import { MovieGridCard } from '~/components/movie/MovieGridCard';
 
