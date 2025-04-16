@@ -35,14 +35,19 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rrghost.movieapp",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Permitir acesso à galeria para selecionar foto de perfil"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.rrghost.movieapp"
+      "package": "com.rrghost.movieapp",
+      "permissions": ["READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"]
     },
     "extra": {
       "router": {

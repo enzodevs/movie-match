@@ -3,15 +3,29 @@ import { Text, TouchableOpacity, TouchableOpacityProps, View } from 'react-nativ
 
 type ButtonProps = {
   title: string;
+  variant?: 'primary' | 'outline' | 'danger';
+  icon?: React.ReactNode;
 } & TouchableOpacityProps;
 
-export const Button = forwardRef<View, ButtonProps>(({ title, ...touchableProps }, ref) => {
+export const Button = forwardRef<View, ButtonProps>(({ title, variant = 'primary', icon, ...touchableProps }, ref) => {
+  const getButtonStyle = () => {
+    switch (variant) {
+      case 'outline':
+        return 'border border-secondary bg-transparent';
+      case 'danger':
+        return 'bg-red-600';
+      default: // primary
+        return 'bg-secondary';
+    }
+  };
+
   return (
     <TouchableOpacity
       ref={ref}
       {...touchableProps}
-      className={`${styles.button} ${touchableProps.className}`}>
-      <Text className={styles.buttonText}>{title}</Text>
+      className={`items-center rounded-lg shadow-md p-4 flex-row justify-center ${getButtonStyle()} ${touchableProps.className || ''}`}>
+      {icon && <View className="mr-2">{icon}</View>}
+      <Text className={`text-white text-lg font-semibold text-center ${variant === 'outline' ? 'text-secondary' : 'text-white'}`}>{title}</Text>
     </TouchableOpacity>
   );
 });

@@ -9,6 +9,7 @@ import { StatusBar } from 'expo-status-bar';
 interface HeaderProps {
   hasBackButton?: boolean;
   title?: string;
+  onBack?: () => void;
 }
 
 const hitSlop = { top: 15, bottom: 15, left: 20, right: 20 };
@@ -16,13 +17,21 @@ const { height } = Dimensions.get('window');
 
 const backButtonTopOffset = height * 0.04;
 
-export const Header = ({ hasBackButton = false, title = "CineMatch" }: HeaderProps) => {
+export const Header = ({ hasBackButton = false, title = "CineMatch", onBack }: HeaderProps) => {
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      router.back();
+    }
+  };
+
   return (
     <View className="bg-primary pt-14 pb-4 px-6 flex-row items-center justify-center shadow-lg">
       <StatusBar style="light" />
       {hasBackButton && (
         <TouchableOpacity 
-          onPress={() => router.back()}
+          onPress={handleBack}
           className="absolute left-6"
           hitSlop={hitSlop}
           style={[styles.backButton, { top: backButtonTopOffset }]} // Apply the responsive top offset

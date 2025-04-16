@@ -7,7 +7,6 @@ import { AppProvider } from '~/contexts';
 import { StatusBar } from 'expo-status-bar';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: '(tabs)',
 };
 
@@ -28,13 +27,7 @@ export default function RootLayout() {
           }}
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen 
-            name="modal" 
-            options={{ 
-              presentation: 'modal',
-              animation: 'fade',
-            }} 
-          />
+          {/* Remove the modal screen since it doesn't exist */}
           <Stack.Screen 
             name="details/[movieId]" 
             options={{ 
@@ -51,8 +44,9 @@ export default function RootLayout() {
               animation: 'slide_from_right',
             }} 
           />
+          {/* Fix onboarding route to match the actual file structure */}
           <Stack.Screen 
-            name="onboarding" 
+            name="onboarding/index" 
             options={{ 
               headerShown: false,
               animation: 'fade',

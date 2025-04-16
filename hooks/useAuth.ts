@@ -60,6 +60,11 @@ export const useAuth = () => {
     try {
       const { user: supabaseUser } = await authService.signUp(email, password);
       const mappedUser = authService.mapUser(supabaseUser);
+      
+      // Add a small delay to ensure the auth user is fully created in the database
+      // before trying to create a profile
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       setUser(mappedUser);
       return mappedUser;
     } catch (err: any) {

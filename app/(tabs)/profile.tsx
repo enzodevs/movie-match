@@ -4,7 +4,7 @@ import { View, Text, Image, TouchableOpacity, ScrollView, RefreshControl, Activi
 import { Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-
+import { useRouter } from 'expo-router';
 import { useAuth } from '~/hooks/';
 import { useProfileStore, useMovieStore} from '~/store/';
 import { Header } from '~/components/layout/Header';
@@ -16,6 +16,8 @@ import { SignInModal } from '~/components/auth/SignInModal';
 const ProfileScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const router = useRouter();
   
   // Auth hooks
   const { user, signOut } = useAuth();
@@ -82,27 +84,31 @@ const ProfileScreen = () => {
     setRefreshing(false);
   };
   
-  // Função para selecionar imagem de perfil
   const selectProfileImage = async () => {
     if (!user) return;
     
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
-    if (permissionResult.granted === false) {
-      alert('É necessário permissão para acessar a galeria!');
-      return;
-    }
-    
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    
-    if (!result.canceled) {
-      const imageUri = result.assets[0].uri;
-      await updateProfileImage(imageUri);
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (permissionResult.granted === false) {
+        alert('É necessário permissão para acessar a galeria!');
+        return;
+      }
+  
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+  
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const imageUri = result.assets[0].uri;
+        await updateProfileImage(imageUri);
+      }
+    } catch (error) {
+      console.error('Error selecting image:', error);
+      alert('Ocorreu um erro ao selecionar a imagem');
     }
   };
   
@@ -125,7 +131,7 @@ const ProfileScreen = () => {
           <Button
             title="Entrar / Criar Conta"
             onPress={() => setShowAuthModal(true)}
-            className="w-full bg-secondary"
+            className="w-full bg-secondary py-3 px-2 rounded-lg flex-row items-center justify-center"
           />
         </View>
         
@@ -187,7 +193,7 @@ const ProfileScreen = () => {
             
             <View className="flex-row mt-3">
               <TouchableOpacity
-                onPress={() => {}} // TODO: Navegar para tela de configurações
+                onPress={() => router.push('./settings')}
                 className="bg-button-secondary py-1 px-3 rounded-full mr-2 flex-row items-center"
               >
                 <Ionicons name="settings-outline" size={16} color="#ffffff" />

@@ -101,13 +101,29 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
           }
         };
         
-        const success = await profileService.createProfile(newProfile);
-        
-        if (!success) {
-          throw new Error("Falha ao criar perfil");
+        try {
+          // Usar createOrUpdateProfile em vez de createProfile para lidar com possível duplicidade
+          const success = await profileService.createOrUpdateProfile(newProfile);
+          
+          if (!success) {
+            throw new Error("Falha ao criar perfil");
+          }
+          
+          // Tentar buscar o perfil novamente após a criação
+          const createdProfile = await profileService.getProfile(userId);
+          set({ profile: createdProfile || newProfile, isLoading: false });
+        } catch (createError: any) {
+          console.error("Error during profile creation:", createError);
+          // Se falhar por conflito (chave duplicada), tentar buscar o perfil existente
+          if (createError.code === '23505') {
+            const existingProfile = await profileService.getProfile(userId);
+            if (existingProfile) {
+              set({ profile: existingProfile, isLoading: false });
+              return;
+            }
+          }
+          throw createError;
         }
-        
-        set({ profile: newProfile, isLoading: false });
       }
     } catch (error) {
       console.error('Erro ao buscar perfil:', error);

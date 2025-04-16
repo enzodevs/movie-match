@@ -1,4 +1,4 @@
-// Hook refatorado para gerenciar o perfil do usuário
+// Hook para gerenciar o perfil do usuário
 
 import { useState, useEffect } from 'react';
 import { UserProfile } from '~/types';
@@ -31,7 +31,25 @@ export const useProfile = () => {
       return;
     }
     
-    fetchProfile();
+    // Implementa uma estratégia de retry para lidar com situações onde
+    // o auth.user foi criado mas o perfil ainda não foi criado com sucesso
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    const fetchProfileWithRetry = async () => {
+      try {
+        await fetchProfile();
+      } catch (err) {
+        // Se ainda estiver dentro do limite de retentativas, tenta novamente após um delay
+        if (retryCount < maxRetries) {
+          console.log(`Profile fetch failed, retrying (${retryCount + 1}/${maxRetries})...`);
+          retryCount++;
+          setTimeout(fetchProfileWithRetry, 1500);
+        }
+      }
+    };
+    
+    fetchProfileWithRetry();
   }, [user]);
   
   const fetchProfile = async () => {
@@ -65,8 +83,33 @@ export const useProfile = () => {
           }
         };
         
-        await profileService.createProfile(newProfile);
-        setProfile(newProfile);
+        // Primeiro verificar se o usuário já existe antes de tentar criar
+        const userExists = await profileService.checkUserExists(user.id);
+        if (!userExists) {
+          console.warn("User does not exist in auth.users, profile creation might fail");
+        }
+        
+        try {
+          const success = await profileService.createOrUpdateProfile(newProfile);
+          if (!success) {
+            throw new Error("Falha ao criar perfil");
+          }
+          
+          // Tentar buscar o perfil novamente após criação
+          const createdProfile = await profileService.getProfile(user.id);
+          setProfile(createdProfile || newProfile);
+        } catch (createError: any) {
+          console.error("Error during profile creation:", createError);
+          // Se falhar por conflito (chave duplicada), tentar buscar o perfil novamente
+          if (createError.code === '23505') {
+            const existingProfile = await profileService.getProfile(user.id);
+            if (existingProfile) {
+              setProfile(existingProfile);
+              return;
+            }
+          }
+          throw createError;
+        }
       }
     } catch (err: any) {
       handleError(err, { method: 'fetchProfile' });
@@ -97,26 +140,37 @@ export const useProfile = () => {
   
   const updateProfileImage = async (imageUri: string): Promise<string | null> => {
     if (!user || !profile) {
+      console.log("ERROR: User or profile is null", { user, profile });
       handleError(new Error('User not authenticated'), { method: 'updateProfileImage' });
       return null;
     }
+
+    console.log("Starting profile image update:", { userId: user.id, imageUri });
     
     setIsLoading(true);
     clearError();
     
     try {
+      console.log("Before calling profileService.updateProfileImage");
       const publicUrl = await profileService.updateProfileImage(user.id, imageUri);
+      console.log("After profileService.updateProfileImage, received URL:", publicUrl);
       
       if (publicUrl) {
-        // Atualizar perfil com a nova URL da imagem
+        console.log("Before updating profile with new image URL");
         await updateProfile({ profile_url: publicUrl });
+        console.log("After updating profile with new image URL");
+      } else {
+        console.log("No public URL returned from updateProfileImage");
       }
       
       return publicUrl;
     } catch (err: any) {
+      console.log("ERROR in updateProfileImage:", err.message);
+      console.log("Full error object:", JSON.stringify(err, null, 2));
       handleError(err, { method: 'updateProfileImage' });
       return null;
     } finally {
+      console.log("Finalizing updateProfileImage function");
       setIsLoading(false);
     }
   };
