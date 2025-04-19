@@ -58,9 +58,6 @@ export const PersonFilmography: React.FC<PersonFilmographyProps> = ({
                 id={item.id} 
                 posterPath={item.poster_path} 
               />
-              <Text className="text-white text-xs mt-1 w-24" numberOfLines={1}>
-                {item.title}
-              </Text>
               {role && (
                 <Text className="text-gray-400 text-xs w-24" numberOfLines={1}>
                   {role}

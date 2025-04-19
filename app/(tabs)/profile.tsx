@@ -193,7 +193,7 @@ const ProfileScreen = () => {
             
             <View className="flex-row mt-3">
               <TouchableOpacity
-                onPress={() => router.push('./settings')}
+                onPress={() => router.push('/settings')}
                 className="bg-button-secondary py-1 px-3 rounded-full mr-2 flex-row items-center"
               >
                 <Ionicons name="settings-outline" size={16} color="#ffffff" />

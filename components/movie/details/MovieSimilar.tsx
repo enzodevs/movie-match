@@ -45,9 +45,6 @@ export const MovieSimilar = ({ movieId, similarMovies }: MovieSimilarProps) => {
               id={item.id} 
               posterPath={item.poster_path} 
             />
-            <Text className="text-white text-xs mt-1 w-24" numberOfLines={1}>
-              {item.title}
-            </Text>
           </View>
         )}
       />

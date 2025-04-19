@@ -68,11 +68,6 @@ export const ProfileListSection = ({
                   id={movieId} 
                   posterPath={movie?.poster_path || ''} 
                 />
-                {movie && (
-                  <Text className="text-white text-xs mt-1 w-24" numberOfLines={1}>
-                    {movie.title}
-                  </Text>
-                )}
               </View>
             );
           })}

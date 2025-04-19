@@ -6,6 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '~/hooks';
 import { profileService } from '~/services/api/profile';
 import { User, UserProfile } from '~/types';
+import { ErrorMessage as CustomErrorMessage } from '~/components/common/ErrorMessage';
+import { ErrorType } from '~/services/errorService';
 
 interface SignInModalProps {
   visible: boolean;
@@ -22,17 +24,7 @@ interface AuthFormState {
   isLogin: boolean;
 }
 
-// Component for displaying error messages
-const ErrorMessage = ({ message }: { message: string | null }) => {
-  if (!message) return null;
-  
-  return (
-    <View className="bg-red-800/30 p-3 rounded-lg mb-4 flex-row items-center">
-      <Ionicons name="alert-circle" size={20} color="#ff4444" />
-      <Text className="text-red-400 ml-2">{message}</Text>
-    </View>
-  );
-};
+// Removed the simple error message component in favor of the project's existing component
 
 export const SignInModal = ({ visible, onClose, onSuccess }: SignInModalProps) => {
   // Form state
@@ -144,6 +136,21 @@ export const SignInModal = ({ visible, onClose, onSuccess }: SignInModalProps) =
         setError('Email ou senha incorretos');
       } else if (err.message?.includes('already registered')) {
         setError('Este email já está registrado');
+        
+        // Alternar automaticamente para o modo de login quando o email já existe
+        setFormState(prev => ({ 
+          ...prev, 
+          isLogin: true,
+          // Manter o email para facilitar o login
+          password: '', 
+          confirmPassword: '', 
+          displayName: '' 
+        }));
+        
+        // Adicionar mensagem sugerindo o login
+        setTimeout(() => {
+          setError('Parece que você já tem uma conta. Tente fazer login.');
+        }, 1500);
       } else {
         setError('Erro de autenticação. Tente novamente.');
       }
@@ -197,7 +204,19 @@ export const SignInModal = ({ visible, onClose, onSuccess }: SignInModalProps) =
             </View>
             
             {/* Error message */}
-            <ErrorMessage message={error} />
+            {error && (
+              <CustomErrorMessage 
+                message={error} 
+                type={error.includes('email já está registrado') || error.includes('Tente fazer login') 
+                  ? ErrorType.VALIDATION 
+                  : error.includes('incorretos') 
+                    ? ErrorType.AUTH 
+                    : ErrorType.UNKNOWN}
+                onDismiss={() => setError(null)}
+                retryText={error.includes('Tente fazer login') ? "Entendi" : undefined}
+                onRetry={error.includes('Tente fazer login') ? () => setError(null) : undefined}
+              />
+            )}
 
             {/* Display name field (sign up only) */}
             {!formState.isLogin && (
