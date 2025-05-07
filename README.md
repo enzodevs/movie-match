@@ -1,6 +1,6 @@
-# Cine Match
+# MovieMatch
 
-![Cine Match App Logo](https://amethyst-fantastic-halibut-830.mypinata.cloud/ipfs/bafkreiaes7akl2d4qupk7v3jm7fsfgh77b5uitryyk2mm7yiuyejqriz5u)
+![MovieMatch App Logo](./docs/images/moviematchlogo.png)
 
 Cine Match is a fun and simple movie recommendation app that helps you find films based on what you like. Whether you're in the mood for something popular or a hidden gem, Cine Match has you covered! This project was created as part of a college assignment to explore app development and movie data.
 
